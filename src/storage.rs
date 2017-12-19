@@ -46,12 +46,12 @@ impl RocksDB {
         self.database.put(key.as_bytes(), &data)
     }
 
-    pub fn delete_game(&self, chat_id: i32) -> Result<(), Error> {
+    pub fn delete_game(&self, chat_id: i64) -> Result<(), Error> {
         let key = format!("g{}", chat_id);
         self.database.delete(key.as_bytes())
     }
 
-    pub fn load_answer_for_game(&self, chat_id: i32) -> Result<Option<String>, Error> {
+    pub fn load_answer_for_game(&self, chat_id: i64) -> Result<Option<String>, Error> {
         let key = format!("g{}", chat_id);
 
         match self.database.get(key.as_bytes()) {
@@ -62,7 +62,7 @@ impl RocksDB {
 
             },
             Ok(None) => Ok(None),
-            Err(e) => Err(e)
+            Err(error) => Err(error)
         }
     }
 }

@@ -111,8 +111,7 @@ impl Bot {
             },
 
             _ => {
-                println!("Received text: {:?}", text);
-                Box::new(future::ok(serde_json::Value::Null))
+                self.check_answer(client, msg.chat.id, text)
             }
         }
     }
@@ -136,6 +135,36 @@ impl Bot {
         }
     }
 
+    fn check_answer(&self, client: Client, chat_id: i64, answer: String) -> Box<Future<Item = serde_json::Value, Error = telegram_bot_client::errors::Error>> { 
+        println!("Received answer: {:?}", answer);
+        match self.storage.load_answer_for_game(chat_id) {
+            Ok(Some(right_answer)) => {
+                    self.storage.delete_game(chat_id).unwrap();
+
+                    let message = 
+                        if answer == right_answer {
+                            request::Message::with_keyboard_remover(chat_id, "You win!".to_string());
+                        } else {
+                            request::Message::with_keyboard_remover(chat_id, "You win!".to_string());
+                        };
+
+                    client.request::<_, serde_json::Value>("sendMessage", &message)
+                },
+
+            Ok(None) => {
+                println!("Game for chat {} is not started", chat_id);
+
+                let message = request::Message::with_keyboard_remover(chat_id, "To start game enter /game command".to_string());
+                client.request::<_, serde_json::Value>("sendMessage", &message)
+            },
+
+            Err(error) => {
+                println!("Failed to load game for chat {}. Error: {:?}", chat_id, error);
+                Box::new(future::ok(serde_json::Value::Null))
+            }
+        }
+    }
+
     fn start_game(&self, client: Client, chat_id: i64) -> Box<Future<Item = serde_json::Value, Error = telegram_bot_client::errors::Error>> {
         // TODO: select random melody
         // let count = self.storage.get_melodies_count();
@@ -149,12 +178,12 @@ impl Bot {
         println!("Storing: {:?}", game);
         self.storage.store_game(game).unwrap();
 
-        // let keyboard = make_keyboard_markup(melody.right_answer, melody.wrong_answers);
+        let keyboard = make_keyboard_markup(melody.right_answer, melody.wrong_answers);
 
         let message = request::AudioMessage{
             chat_id,
             audio: melody.file_id,
-            // reply_markup: Some(keyboard)
+            reply_markup: Some(keyboard)
         };
 
         println!("Sending: {:?}", message);
@@ -163,7 +192,7 @@ impl Bot {
     }
 }
 
-fn make_keyboard_markup(right_answer: String, wrong_answers: [String; 3]) -> request::ReplyKeyboardMarkup {
+fn make_keyboard_markup(right_answer: String, wrong_answers: [String; 3]) -> request::ReplyMarkup {
     let mut answers = Vec::new();
     answers.extend(wrong_answers.iter().cloned());
     answers.push(right_answer);
@@ -178,7 +207,7 @@ fn make_keyboard_markup(right_answer: String, wrong_answers: [String; 3]) -> req
         buttons.push(button);
     }
 
-    return request::ReplyKeyboardMarkup::new(buttons);
+    return request::ReplyMarkup::keyboard_markup(buttons);
 }
 
 #[test]
