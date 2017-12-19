@@ -1,5 +1,5 @@
 [telegram]
-token = "465184793:AAFabfcfPHmxTGFZ4jWj-I2J3vKyscNqnTY"
+token = "TOKEN"
 
 [database]
 path = "/tmp/melodies_db"
