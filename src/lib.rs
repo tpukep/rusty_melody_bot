@@ -207,7 +207,7 @@ fn make_keyboard_markup(right_answer: String, wrong_answers: [String; 3]) -> req
         buttons.push(button);
     }
 
-    return request::ReplyMarkup::keyboard_markup(buttons);
+    return request::ReplyMarkup::reply_keyboard_markup(buttons);
 }
 
 #[test]
@@ -220,7 +220,7 @@ fn test_keyboard_serialize() {
         buttons.push(request::KeyboardButton::new(i.to_string()));
     }
 
-    let keyboard = request::ReplyKeyboardMarkup::new(buttons);
+    let keyboard = request::ReplyMarkup::reply_keyboard_markup(buttons);
 
     let data = serde_json::to_string(&keyboard).unwrap();
 
