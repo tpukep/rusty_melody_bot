@@ -143,10 +143,15 @@ impl Bot {
 
                     let message = 
                         if answer == right_answer {
-                            request::Message::with_keyboard_remover(chat_id, "You win!".to_string());
+                            println!("Answer is right");
+                            request::Message::with_keyboard_remover(chat_id, "You win!".to_string())
                         } else {
-                            request::Message::with_keyboard_remover(chat_id, "You win!".to_string());
+                            println!("Answer is wrong");
+                            request::Message::with_keyboard_remover(chat_id, "You loose".to_string())
                         };
+            
+                    let json = serde_json::to_string(&message);
+                    println!("Message: {:?}", json);
 
                     client.request::<_, serde_json::Value>("sendMessage", &message)
                 },
@@ -155,6 +160,8 @@ impl Bot {
                 println!("Game for chat {} is not started", chat_id);
 
                 let message = request::Message::with_keyboard_remover(chat_id, "To start game enter /game command".to_string());
+                let json = serde_json::to_string(&message);
+                println!("Message: {:?}", json);
                 client.request::<_, serde_json::Value>("sendMessage", &message)
             },
 
@@ -186,7 +193,8 @@ impl Bot {
             reply_markup: Some(keyboard)
         };
 
-        println!("Sending: {:?}", message);
+        let json = serde_json::to_string(&message);
+        println!("AudioMessage: {:?}", json);
 
         client.request::<_, serde_json::Value>("sendAudio", &message)
     }

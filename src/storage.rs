@@ -26,7 +26,6 @@ impl RocksDB {
         match self.database.get(key.as_bytes()) {
             Ok(Some(data)) => {
                 let melody: Melody = deserialize(&data[..]).unwrap();
-                println!("Retrieved value {:?}", melody);
                 Ok(Some(melody))
 
             },
@@ -57,7 +56,6 @@ impl RocksDB {
         match self.database.get(key.as_bytes()) {
             Ok(Some(data)) => {
                 let game: Game = deserialize(&data[..]).unwrap();
-                println!("Retrieved value {:?}", game);
                 Ok(Some(game.right_answer))
 
             },
